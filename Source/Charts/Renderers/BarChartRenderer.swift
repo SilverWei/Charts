@@ -326,8 +326,29 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                     let bezierPath = UIBezierPath(roundedRect: barRect, byRoundingCorners: dataSet.barRoundingCorners, cornerRadii: cornerRadius)
                     context.addPath(bezierPath.cgPath)
                 #endif
-                context.fillPath()
-
+                
+                if !isSingleColor
+                {
+                    let fillColors = [dataSet.color(atIndex: 0).cgColor, dataSet.color(atIndex: 1).cgColor]
+                    let locations:[CGFloat] = [0.0, 1.0]
+                    
+                    context.saveGState()
+                    context.clip()
+                    let gradient:CGGradient
+                    let colorspace:CGColorSpace
+                    colorspace = CGColorSpaceCreateDeviceRGB()
+                    
+                    gradient = CGGradient(colorsSpace: colorspace, colors: fillColors as CFArray, locations: locations)!
+                    
+                    //Vertical Gradient
+                    let startPoint:CGPoint = CGPoint(x: 0.0, y: viewPortHandler.contentBottom)
+                    let endPoint:CGPoint = CGPoint(x: 0.0, y: viewPortHandler.contentBottom - barRect.height)
+                    context.drawLinearGradient(gradient, start: startPoint, end: endPoint, options: .init(rawValue: 0))
+                    context.restoreGState()
+                }
+                else {
+                    context.fillPath()
+                }
                 if drawBorder
                 {
                     bezierPath.lineWidth = borderWidth
